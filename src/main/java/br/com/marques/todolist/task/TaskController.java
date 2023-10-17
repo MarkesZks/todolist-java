@@ -55,18 +55,23 @@ public class TaskController {
       //Update
       //PathVariable serve para passar como endpoint o id do usuario que esta requisitando por exemplo:
       //http://localhost:8080/tasks/615156151-casdasda-516561561
-      @PutMapping("/{id}")
-      public TaskModel update(@RequestBody TaskModel taskModel, HttpServletRequest request, @PathVariable UUID id){
-         var task =  this.taskRepository.findById(id).orElse(null);
-         var idUser = request.getAttribute("idUser");
-         if (!task.getIdUser().equals(idUser)) {
-          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuário não tem permissão para alterar essa tarefa");
-        }
+     
+  @PutMapping("/{id}")
+  public ResponseEntity update(@RequestBody TaskModel taskModel, HttpServletRequest request, @PathVariable UUID id) {
+    var task = this.taskRepository.findById(id).orElse(null);
 
-        Utils.copyNonNullProperties(taskModel, task);
-        var taskUpdated = this.taskRepository.save(task);
-        return ResponseEntity.ok().body(taskUpdated);
+    if (task == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tarefa não encontrada");
+    }
 
+    var idUser = request.getAttribute("idUser");
 
-      }
+    if (!task.getIdUser().equals(idUser)) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuário não tem permissão para alterar essa tarefa");
+    }
+
+    Utils.copyNonNullProperties(taskModel, task);
+    var taskUpdated = this.taskRepository.save(task);
+    return ResponseEntity.ok().body(taskUpdated);
+  }
 }
